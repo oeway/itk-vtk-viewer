@@ -1,159 +1,124 @@
 <!DOCTYPE html>
-<html lang="en">
-<head prefix="og: http://ogp.me/ns#"><meta name="generator" content="Hexo 3.9.0">
-  <meta charset="utf-8">
-  <title>itk-vtk-viewer</title>
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Canonical links -->
-  <link rel="canonical" href="https://kitware.github.io/itk-vtk-viewer/index.html">
-  <!-- Alternative links -->
-  
-    
-      <link rel="alternative" hreflang="en" href="https://kitware.github.io/itk-vtk-viewer/index.html">
-    
-  
-  <!-- Icon -->
-  <link rel="apple-touch-icon" sizes="57x57" href="/itk-vtk-viewer/icon/apple-touch-icon-57x57.png">
-  <link rel="apple-touch-icon" sizes="114x114" href="/itk-vtk-viewer/icon/apple-touch-icon-114x114.png">
-  <link rel="apple-touch-icon" sizes="72x72" href="/itk-vtk-viewer/icon/apple-touch-icon-72x72.png">
-  <link rel="apple-touch-icon" sizes="144x144" href="/itk-vtk-viewer/icon/apple-touch-icon-144x144.png">
-  <link rel="apple-touch-icon" sizes="60x60" href="/itk-vtk-viewer/icon/apple-touch-icon-60x60.png">
-  <link rel="apple-touch-icon" sizes="120x120" href="/itk-vtk-viewer/icon/apple-touch-icon-120x120.png">
-  <link rel="apple-touch-icon" sizes="76x76" href="/itk-vtk-viewer/icon/apple-touch-icon-76x76.png">
-  <link rel="apple-touch-icon" sizes="152x152" href="/itk-vtk-viewer/icon/apple-touch-icon-152x152.png">
-  <link rel="icon" type="image/png" href="/itk-vtk-viewer/icon/favicon-196x196.png" sizes="196x196">
-  <link rel="icon" type="image/png" href="/itk-vtk-viewer/icon/favicon-160x160.png" sizes="160x160">
-  <link rel="icon" type="image/png" href="/itk-vtk-viewer/icon/favicon-96x96.png" sizes="96x96">
-  <link rel="icon" type="image/png" href="/itk-vtk-viewer/icon/favicon-16x16.png" sizes="16x16">
-  <link rel="icon" type="image/png" href="/itk-vtk-viewer/icon/favicon-32x32.png" sizes="32x32">
-  <meta name="msapplication-TileColor" content="#2f83cd">
-  <meta name="msapplication-TileImage" content="/itk-vtk-viewer/icon/mstile-144x144.png">
-  <!-- CSS -->
-  <!-- build:css build/css/navy.css -->
-  <link rel="stylesheet" href="/itk-vtk-viewer/css/navy.css">
-  <!-- endbuild -->
-  <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css">
-  <!-- RSS -->
-  <link rel="alternate" href="/itk-vtk-viewer/atom.xml" title="itk-vtk-viewer">
-  <!-- Open Graph -->
-  <meta name="description" content="ITK/VTK Viewer">
-<meta property="og:type" content="website">
-<meta property="og:title" content="itk-vtk-viewer">
-<meta property="og:url" content="https://kitware.github.io/itk-vtk-viewer/index.html">
-<meta property="og:site_name" content="itk-vtk-viewer">
-<meta property="og:description" content="ITK/VTK Viewer">
-<meta property="og:locale" content="en">
-<meta property="og:image" content="https://badge.fury.io/js/itk-vtk-viewer.svg">
-<meta property="og:image" content="https://kitware.github.io/itk-vtk-viewer/docs/howToUse.jpg">
-<meta property="og:updated_time" content="2019-10-09T19:45:46.716Z">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="itk-vtk-viewer">
-<meta name="twitter:description" content="ITK/VTK Viewer">
-<meta name="twitter:image" content="https://badge.fury.io/js/itk-vtk-viewer.svg">
-  <!-- Google Analytics -->
-  
-<script>
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  ga('create', 'UA-90338862-7', 'auto');
-  ga('send', 'pageview');
-</script>
+    <link rel="manifest" href="manifest.json">
 
-</head>
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="image-viewer">
+    <meta name="apple-mobile-web-app-title" content="image-viewer">
+    <meta name="theme-color" content="#8B8B8B">
+    <meta name="msapplication-navbutton-color" content="#8B8B8B">
+    <meta name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent">
+    <meta name="msapplication-starturl" content="/itk-vtk-viewer/app/">
+    <meta name="viewport" content="width=device-width, initial-scale=1,
+    shrink-to-fit=no">
 
-<body>
-  <div id="container">
-    <header id="header" class="wrapper">
-  <div id="header-inner" class="inner">
-    <h1 id="logo-wrap">
-      <a href="/itk-vtk-viewer/" id="logo">itk-vtk-viewer</a>
-    </h1>
-    <nav id="main-nav">
-      <a href="/itk-vtk-viewer/docs/" class="main-nav-link">Documentation</a><a href="/itk-vtk-viewer/app/" class="main-nav-link">Application</a>
-      <a href="https://github.com/kitware/itk-vtk-viewer" class="main-nav-link"><i class="fa fa-github-alt"></i></a>
-      <div id="search-input-wrap">
-        <div id="search-input-icon">
-          <i class="fa fa-search"></i>
-        </div>
-        <input type="search" id="search-input" placeholder="Search...">
-      </div>
-    </nav>
-    <a id="mobile-nav-toggle">
-      <span class="mobile-nav-toggle-bar"></span>
-      <span class="mobile-nav-toggle-bar"></span>
-      <span class="mobile-nav-toggle-bar"></span>
-    </a>
-  </div>
-</header>
+    <link rel="icon" type="image/png" sizes="50x50"
+    href="/itk-vtk-viewer/logo.png">
+    <link rel="apple-touch-icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
 
-    <header id="banner" class="wrapper">
-  
-    <div class="inner">
-      <h2 id="banner-title">Load your data with itk.js and visualize it with vtk.js</h2>
-      <div id="banner-start">
-        
-        
-          <span id="banner-start-command">itk-vtk-viewer --help</span>
-        
-      </div>
-    </div>
-  
-</header>
-<div id="content-wrap">
-  <div class="wrapper">
-    <div class="inner">
-      <ul id="intro-feature-list"><li class="intro-feature-wrap"><div class="intro-feature"><div class="intro-feature-icon"><i class="fa fa-cloud-download"></i></div><h3 class="intro-feature-title"><a href="https://www.npmjs.com/package/itk-vtk-viewer" class="link" target="_blank" rel="noopener">Releases</a><img style="padding-left: 25px" src="https://badge.fury.io/js/itk-vtk-viewer.svg"></h3><p class="intro-feature-desc">ITK/VTK Viewer is a web-based viewer for loading 2D/3D images and more...</p></div></li><li class="intro-feature-wrap"><div class="intro-feature"><div class="intro-feature-icon"><i class="fa fa-life-ring"></i></div><h3 class="intro-feature-title"><a href="http://www.vtk.org/services/" class="link" target="_blank" rel="noopener">Support and Services</a></h3><p class="intro-feature-desc">Kitware offers advanced software R&D solutions and services. Find out how we can help with your next project.</p></div></li></ul><ul id="intro-cmd-wrap" style="margin-top: 25px;border-radius: 10px;"><li class="intro-cmd-item">npm install itk-vtk-viewer -g</li><li class="intro-cmd-item">itk-vtk-viewer</li></ul><p style="text-align: center; margin: 20px auto; max-width: 700px;"><img src="./docs/howToUse.jpg" width="100%"></p>
-    </div>
-  </div>
-</div>
+    <script>
+      if ('serviceWorker' in navigator && document.location.protocol !== 'http:') {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./serviceWorker.js').then(function (registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope)
+          }, function (err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err)
+          })
+        })
+      }
+    </script>
+    <link rel="icon" type="image/png" href="favicon-32x32.png">
 
-    <footer id="footer" class="wrapper">
-  <div class="inner">
-    <div id="footer-copyright">
-      &copy; 2019 <a href="https://www.kitware.com/" target="_blank">Kitware Inc.</a>
-    </div>
-    <div id="footer-links">
-      <a href="https://github.com/kitware/itk-vtk-viewer" class="footer-link" target="_blank"><i class="fa fa-github-alt"></i></a>
-    </div>
-  </div>
-</footer>
-
-  </div>
-  <div id="mobile-nav-dimmer"></div>
-  <nav id="mobile-nav">
-  <div id="mobile-nav-inner">
-    <ul id="mobile-nav-list">
-      <a href="/itk-vtk-viewer/docs/" class="mobile-nav-link">Documentation</a><a href="/itk-vtk-viewer/app/" class="mobile-nav-link">Application</a>
-      <li class="mobile-nav-item">
-        <a href="https://github.com/kitware/itk-vtk-viewer" class="mobile-nav-link" rel="external" target="_blank">GitHub</a>
-      </li>
-    </ul>
-    
-  </div>
-  <div id="mobile-lang-select-wrap">
-    <span id="mobile-lang-select-label"><i class="fa fa-globe"></i><span>English</span></span>
-    <select id="mobile-lang-select" data-canonical="">
+  </head>
+  <body>
+    <div class="content" style="position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; overflow: hidden; background: black; margin: 0; padding: 0;"></div>
+    <script type="text/javascript" src="itkVtkViewer.js">
+    </script>
+    <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.js"></script>
+    <script>
+      const numpy2vtkType = {
+        'int8': {componentType: 'int8_t', arrayType: Int8Array },
+        'uint8': {componentType: 'uint8_t', arrayType: Uint8Array },
+        'int16': {componentType: 'int16_t', arrayType: Int16Array },
+        'uint16': {componentType: 'uint16_t', arrayType: Uint16Array },
+        'int32': {componentType: 'int32_t', arrayType: Int32Array },
+        'uint32': {componentType: 'uint32_t', arrayType: Uint32Array },
+        'float32': {componentType: 'float', arrayType: Float32Array },
+        'float64': {componentType: 'double', arrayType: Float64Array }
+      }
       
-        <option value="en" selected>English</option>
-      
-    </select>
-  </div>
-</nav>
-  <!-- Scripts -->
-<!-- build:js build/js/main.js -->
-<script src="/itk-vtk-viewer/js/lang_select.js"></script>
-<script src="/itk-vtk-viewer/js/toc.js"></script>
-<script src="/itk-vtk-viewer/js/mobile_nav.js"></script>
-<!-- endbuild -->
-<script src="https://cdn.jsdelivr.net/retinajs/1.3.0/retina.min.js" async></script>
+      function convertVtkImage(data){
+        if(data.__jailed_type__ === 'ndarray'){
+          if(data.__shape__.length === 2 || (data.__shape__.length==3 && data.__shape__[2]<=3)){
+            const dtype = numpy2vtkType[data.__dtype__];
+            const dshape = data.__shape__.length === 2? data.__shape__ : data.__shape__.slice(0, 2)
+            const channels =  data.__shape__.length === 3 ?  data.__shape__[2] : 1;
+            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
+              imageType: { dimension: 2, pixelType: 1, componentType: dtype.componentType, components:channels},
+              name: 'Image',
+              origin: [0,0],
+              spacing: [1,1],
+              direction: {data: [1,0,0,1]},
+              size: [dshape[1], dshape[0]],
+              data: new dtype.arrayType(data.__value__.buffer)
+            })
+          }
+          else if(data.__shape__.length === 3){
+            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
+              imageType: { dimension: 3, pixelType: 1, componentType: dtype.componentType, components: 1},
+              name: 'image',
+              origin: [0,0,0],
+              spacing: [1,1,1],
+              direction: {data: [1,0,0,0,1,0,0,0,1]},
+              size: [dshape[2], dshape[1], dshape[0]],
+              data: new dtype.arrayType(data.__value__.buffer)
+            })
+          }
+          else{
+            throw new Error(`Unsupported shape: ${arr.shape}`)
+          }
+        }
+        return data
+      }
+      var container = document.querySelector('.content');
+      var viewer = itkVtkViewer.processParameters(container, { fullscreen: true });
+      if (!viewer) {
+        itkVtkViewer.createViewerFromLocalFiles(container).then((v)=>{
+          viewer = v;
+        })
+      }
+      loadImJoyPluginAPI().then((api)=>{
+        api.export({
+          setup(){
 
-
-
-</body>
+          },
+          async run(ctx) {
+            if(ctx.data && ctx.data.image_array){
+              this.imshow(ctx.data.image_array)
+            }
+          },
+          imshow(image_array){
+            const vtkImage = convertVtkImage(image_array)
+            const extent_3d = vtkImage.getExtent();
+            const extent =  [extent_3d[0], extent_3d[2], extent_3d[1], extent_3d[3]];
+            const viewer = itkVtkViewer.createViewer(container, {
+              image: vtkImage,
+              pointSets: null,
+              geometries: null,
+              use2D: true,
+              rotate: false
+            })
+          }
+        })
+      })
+    </script>
+  </body>
 </html>
