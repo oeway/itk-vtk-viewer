@@ -21,7 +21,7 @@
     <link rel="icon" type="image/png" sizes="50x50"
     href="/itk-vtk-viewer/logo.png">
     <link rel="apple-touch-icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
-
+    <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.min.js"></script>
     <script>
       if ('serviceWorker' in navigator && document.location.protocol !== 'http:') {
         window.addEventListener('load', function () {
@@ -36,80 +36,31 @@
       }
     </script>
     <link rel="icon" type="image/png" href="favicon-32x32.png">
-
   </head>
   <body>
     <div class="content" style="position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; overflow: hidden; background: black; margin: 0; padding: 0;"></div>
     <script type="text/javascript" src="itkVtkViewer.js">
     </script>
-    <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.js"></script>
     <script>
-      const numpy2vtkType = {
-        'int8': {componentType: 'int8_t', arrayType: Int8Array },
-        'uint8': {componentType: 'uint8_t', arrayType: Uint8Array },
-        'int16': {componentType: 'int16_t', arrayType: Int16Array },
-        'uint16': {componentType: 'uint16_t', arrayType: Uint16Array },
-        'int32': {componentType: 'int32_t', arrayType: Int32Array },
-        'uint32': {componentType: 'uint32_t', arrayType: Uint32Array },
-        'float32': {componentType: 'float', arrayType: Float32Array },
-        'float64': {componentType: 'double', arrayType: Float64Array }
-      }
-      
-      function convertVtkImage(data){
-        if(data.__jailed_type__ === 'ndarray'){
-          if(data.__shape__.length === 2 || (data.__shape__.length==3 && data.__shape__[2]<=3)){
-            const dtype = numpy2vtkType[data.__dtype__];
-            const dshape = data.__shape__.length === 2? data.__shape__ : data.__shape__.slice(0, 2)
-            const channels =  data.__shape__.length === 3 ?  data.__shape__[2] : 1;
-            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
-              imageType: { dimension: 2, pixelType: 1, componentType: dtype.componentType, components:channels},
-              name: 'Image',
-              origin: [0,0],
-              spacing: [1,1],
-              direction: {data: [1,0,0,1]},
-              size: [dshape[1], dshape[0]],
-              data: new dtype.arrayType(data.__value__.buffer)
-            })
-          }
-          else if(data.__shape__.length === 3){
-            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
-              imageType: { dimension: 3, pixelType: 1, componentType: dtype.componentType, components: 1},
-              name: 'image',
-              origin: [0,0,0],
-              spacing: [1,1,1],
-              direction: {data: [1,0,0,0,1,0,0,0,1]},
-              size: [dshape[2], dshape[1], dshape[0]],
-              data: new dtype.arrayType(data.__value__.buffer)
-            })
-          }
-          else{
-            throw new Error(`Unsupported shape: ${arr.shape}`)
-          }
-        }
-        return data
-      }
-      var container = document.querySelector('.content');
-      var viewer = itkVtkViewer.processParameters(container, { fullscreen: true });
-      if (!viewer) {
-        itkVtkViewer.createViewerFromLocalFiles(container).then((v)=>{
-          viewer = v;
-        })
-      }
-      loadImJoyPluginAPI().then((api)=>{
+      async function setupViewerForImJoy(container){
+        const imjoyRPC = await imjoyLoader.loadImJoyRPC({'api_version': '0.2.0'})
+        const api = await imjoyRPC.setupRPC()
         api.export({
-          setup(){
-
-          },
+          setup(){ api.log("itk-vtk-viewer loaded successfully.")},
           async run(ctx) {
             if(ctx.data && ctx.data.image_array){
               this.imshow(ctx.data.image_array)
             }
+            else{
+              itkVtkViewer.createViewerFromLocalFiles(container)
+            }
           },
           imshow(image_array){
             const vtkImage = convertVtkImage(image_array)
+            debugger
             const extent_3d = vtkImage.getExtent();
             const extent =  [extent_3d[0], extent_3d[2], extent_3d[1], extent_3d[3]];
-            const viewer = itkVtkViewer.createViewer(container, {
+            itkVtkViewer.createViewer(container, {
               image: vtkImage,
               pointSets: null,
               geometries: null,
@@ -118,7 +69,65 @@
             })
           }
         })
-      })
+
+        const numpy2vtkType = {
+          'int8': {componentType: 'int8_t', arrayType: Int8Array },
+          'uint8': {componentType: 'uint8_t', arrayType: Uint8Array },
+          'int16': {componentType: 'int16_t', arrayType: Int16Array },
+          'uint16': {componentType: 'uint16_t', arrayType: Uint16Array },
+          'int32': {componentType: 'int32_t', arrayType: Int32Array },
+          'uint32': {componentType: 'uint32_t', arrayType: Uint32Array },
+          'float32': {componentType: 'float', arrayType: Float32Array },
+          'float64': {componentType: 'double', arrayType: Float64Array }
+        }
+        
+        function convertVtkImage(data){
+          if(data.__jailed_type__ === 'ndarray'){
+            if(data.__shape__.length === 2 || (data.__shape__.length==3 && data.__shape__[2]<=3)){
+              const dtype = numpy2vtkType[data.__dtype__];
+              const dshape = data.__shape__.length === 2? data.__shape__ : data.__shape__.slice(0, 2)
+              const channels =  data.__shape__.length === 3 ?  data.__shape__[2] : 1;
+              return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
+                imageType: { dimension: 2, pixelType: 1, componentType: dtype.componentType, components:channels},
+                name: 'Image',
+                origin: [0,0],
+                spacing: [1,1],
+                direction: {data: [1,0,0,1]},
+                size: [dshape[1], dshape[0]],
+                data: new dtype.arrayType(data.__value__.buffer)
+              })
+            }
+            else if(data.__shape__.length === 3){
+              return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
+                imageType: { dimension: 3, pixelType: 1, componentType: dtype.componentType, components: 1},
+                name: 'image',
+                origin: [0,0,0],
+                spacing: [1,1,1],
+                direction: {data: [1,0,0,0,1,0,0,0,1]},
+                size: [dshape[2], dshape[1], dshape[0]],
+                data: new dtype.arrayType(data.__value__.buffer)
+              })
+            }
+            else{
+              throw new Error(`Unsupported shape: ${arr.shape}`)
+            }
+          }
+          return data
+        }
+      }
+
+      const container = document.querySelector('.content');
+      const urlParams = new URLSearchParams(window.location.search)
+      // inside an iframe
+      if(window.self !== window.top && urlParams.get('imjoy')){
+        setupViewerForImJoy(container)
+      }
+      else{
+        let viewer = itkVtkViewer.processURLParameters(container, { fullscreen: true });
+        if (!viewer) {
+          itkVtkViewer.createViewerFromLocalFiles(container)
+        }
+      }
     </script>
   </body>
 </html>
