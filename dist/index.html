@@ -57,7 +57,6 @@
           },
           imshow(image_array){
             const vtkImage = convertVtkImage(image_array)
-            debugger
             const extent_3d = vtkImage.getExtent();
             const extent =  [extent_3d[0], extent_3d[2], extent_3d[1], extent_3d[3]];
             itkVtkViewer.createViewer(container, {
