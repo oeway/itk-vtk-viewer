@@ -46,9 +46,8 @@
         const imjoyRPC = await imjoyLoader.loadImJoyRPC({'api_version': '0.2.0'})
         const api = await imjoyRPC.setupRPC({
           name: 'itk-vtk-viewer',
-          version: '9.22.x',
+          version: '9.23.x',
           description: '2D / 3D web image, mesh, and point set viewer using itk.js and vtk.js ',
-          type: 'rpc-window',
         })
         api.export({
           setup(){ api.log("itk-vtk-viewer loaded successfully.")},
