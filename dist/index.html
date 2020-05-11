@@ -86,11 +86,11 @@
         }
         
         function convertVtkImage(data){
-          if(data.__jailed_type__ === 'ndarray'){
-            if(data.__shape__.length === 2 || (data.__shape__.length==3 && data.__shape__[2]<=3)){
-              const dtype = numpy2vtkType[data.__dtype__];
-              const dshape = data.__shape__.length === 2? data.__shape__ : data.__shape__.slice(0, 2)
-              const channels =  data.__shape__.length === 3 ?  data.__shape__[2] : 1;
+          if(data._rtype === 'ndarray'){
+            if(data._rshape.length === 2 || (data._rshape.length==3 && data._rshape[2]<=3)){
+              const dtype = numpy2vtkType[data._rdtype];
+              const dshape = data._rshape.length === 2? data._rshape : data._rshape.slice(0, 2)
+              const channels =  data._rshape.length === 3 ?  data._rshape[2] : 1;
               return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
                 imageType: { dimension: 2, pixelType: 1, componentType: dtype.componentType, components:channels},
                 name: 'Image',
@@ -98,10 +98,10 @@
                 spacing: [1,1],
                 direction: {data: [1,0,0,1]},
                 size: [dshape[1], dshape[0]],
-                data: new dtype.arrayType(data.__value__.buffer)
+                data: new dtype.arrayType(data._rvalue.buffer)
               })
             }
-            else if(data.__shape__.length === 3){
+            else if(data._rshape.length === 3){
               return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
                 imageType: { dimension: 3, pixelType: 1, componentType: dtype.componentType, components: 1},
                 name: 'image',
@@ -109,7 +109,7 @@
                 spacing: [1,1,1],
                 direction: {data: [1,0,0,0,1,0,0,0,1]},
                 size: [dshape[2], dshape[1], dshape[0]],
-                data: new dtype.arrayType(data.__value__.buffer)
+                data: new dtype.arrayType(data._rvalue.buffer)
               })
             }
             else{
