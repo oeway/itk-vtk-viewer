@@ -1,137 +1,182 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="manifest" href="manifest.json">
+<head>
+  <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="image-viewer">
-    <meta name="apple-mobile-web-app-title" content="image-viewer">
-    <meta name="theme-color" content="#8B8B8B">
-    <meta name="msapplication-navbutton-color" content="#8B8B8B">
-    <meta name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent">
-    <meta name="msapplication-starturl" content="/itk-vtk-viewer/app/">
-    <meta name="viewport" content="width=device-width, initial-scale=1,
+  <link rel="manifest" href="manifest.json">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="image-viewer">
+  <meta name="apple-mobile-web-app-title" content="image-viewer">
+  <meta name="theme-color" content="#8B8B8B">
+  <meta name="msapplication-navbutton-color" content="#8B8B8B">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="msapplication-starturl" content="/itk-vtk-viewer/app/">
+  <meta name="viewport" content="width=device-width, initial-scale=1,
     shrink-to-fit=no">
 
-    <link rel="icon" type="image/png" sizes="50x50"
-    href="/itk-vtk-viewer/logo.png">
-    <link rel="apple-touch-icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
-    <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.js"></script>
-    <script>
-      if ('serviceWorker' in navigator && document.location.protocol !== 'http:') {
-        window.addEventListener('load', function () {
-          navigator.serviceWorker.register('./serviceWorker.js').then(function (registration) {
-            // Registration was successful
-            console.log('ServiceWorker registration successful with scope: ', registration.scope)
-          }, function (err) {
-            // registration failed :(
-            console.log('ServiceWorker registration failed: ', err)
+  <link rel="icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
+  <link rel="apple-touch-icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
+  <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.js"></script>
+  <script>
+    if ('serviceWorker' in navigator && document.location.protocol !== 'http:') {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./serviceWorker.js').then(function (registration) {
+          // Registration was successful
+          console.log('ServiceWorker registration successful with scope: ', registration.scope)
+        }, function (err) {
+          // registration failed :(
+          console.log('ServiceWorker registration failed: ', err)
+        })
+      })
+    }
+
+  </script>
+  <link rel="icon" type="image/png" href="favicon-32x32.png">
+</head>
+
+<body>
+  <div class="content"
+    style="position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; overflow: hidden; background: black; margin: 0; padding: 0;">
+  </div>
+  <script type="text/javascript" src="itkVtkViewer.js">
+  </script>
+  <script>
+    async function setupViewerForImJoy(container) {
+      const imjoyRPC = await imjoyLoader.loadImJoyRPC({
+        'api_version': '0.2.1'
+      })
+      const api = await imjoyRPC.setupRPC({
+        name: 'itk-vtk-viewer',
+        version: '9.23.x',
+        description: '2D / 3D web image, mesh, and point set viewer using itk.js and vtk.js ',
+        type: 'rpc-window',
+      })
+      api.export({
+        setup() {
+          api.log("itk-vtk-viewer loaded successfully.")
+        },
+        async run(ctx) {
+          if (ctx.data && ctx.data.image_array) {
+            this.imshow(ctx.data.image_array)
+          } else {
+            itkVtkViewer.createViewerFromLocalFiles(container)
+          }
+        },
+        imshow(image_array) {
+          const vtkImage = convertVtkImage(image_array)
+          const extent_3d = vtkImage.getExtent();
+          const extent = [extent_3d[0], extent_3d[2], extent_3d[1], extent_3d[3]];
+          itkVtkViewer.createViewer(container, {
+            image: vtkImage,
+            pointSets: null,
+            geometries: null,
+            use2D: true,
+            rotate: false
           })
-        })
+        }
+      })
+
+      const numpy2vtkType = {
+        'int8': {
+          componentType: 'int8_t',
+          arrayType: Int8Array
+        },
+        'uint8': {
+          componentType: 'uint8_t',
+          arrayType: Uint8Array
+        },
+        'int16': {
+          componentType: 'int16_t',
+          arrayType: Int16Array
+        },
+        'uint16': {
+          componentType: 'uint16_t',
+          arrayType: Uint16Array
+        },
+        'int32': {
+          componentType: 'int32_t',
+          arrayType: Int32Array
+        },
+        'uint32': {
+          componentType: 'uint32_t',
+          arrayType: Uint32Array
+        },
+        'float32': {
+          componentType: 'float',
+          arrayType: Float32Array
+        },
+        'float64': {
+          componentType: 'double',
+          arrayType: Float64Array
+        }
       }
-    </script>
-    <link rel="icon" type="image/png" href="favicon-32x32.png">
-  </head>
-  <body>
-    <div class="content" style="position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; overflow: hidden; background: black; margin: 0; padding: 0;"></div>
-    <script type="text/javascript" src="itkVtkViewer.js">
-    </script>
-    <script>
-      async function setupViewerForImJoy(container){
-        const imjoyRPC = await imjoyLoader.loadImJoyRPC({'api_version': '0.2.1'})
-        const api = await imjoyRPC.setupRPC({
-          name: 'itk-vtk-viewer',
-          version: '9.23.x',
-          description: '2D / 3D web image, mesh, and point set viewer using itk.js and vtk.js ',
-          type: 'rpc-window',
-        })
-        api.export({
-          setup(){ api.log("itk-vtk-viewer loaded successfully.")},
-          async run(ctx) {
-            if(ctx.data && ctx.data.image_array){
-              this.imshow(ctx.data.image_array)
-            }
-            else{
-              itkVtkViewer.createViewerFromLocalFiles(container)
-            }
-          },
-          imshow(image_array){
-            const vtkImage = convertVtkImage(image_array)
-            const extent_3d = vtkImage.getExtent();
-            const extent =  [extent_3d[0], extent_3d[2], extent_3d[1], extent_3d[3]];
-            itkVtkViewer.createViewer(container, {
-              image: vtkImage,
-              pointSets: null,
-              geometries: null,
-              use2D: true,
-              rotate: false
+
+      function convertVtkImage(data) {
+        if (data._rtype === 'ndarray') {
+          const dtype = numpy2vtkType[data._rdtype];
+          const dshape = data._rshape.length === 2 ? data._rshape : data._rshape.slice(0, 2)
+          const channels = data._rshape.length === 3 ? data._rshape[2] : 1;
+          if (data._rshape.length === 2 || (data._rshape.length == 3 && data._rshape[2] <= 3)) {
+            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
+              imageType: {
+                dimension: 2,
+                pixelType: 1,
+                componentType: dtype.componentType,
+                components: channels
+              },
+              name: 'Image',
+              origin: [0, 0],
+              spacing: [1, 1],
+              direction: {
+                data: [1, 0, 0, 1]
+              },
+              size: [dshape[1], dshape[0]],
+              data: new dtype.arrayType(data._rvalue.buffer)
             })
+          } else if (data._rshape.length === 3) {
+            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
+              imageType: {
+                dimension: 3,
+                pixelType: 1,
+                componentType: dtype.componentType,
+                components: 1
+              },
+              name: 'image',
+              origin: [0, 0, 0],
+              spacing: [1, 1, 1],
+              direction: {
+                data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
+              },
+              size: [dshape[2], dshape[1], dshape[0]],
+              data: new dtype.arrayType(data._rvalue.buffer)
+            })
+          } else {
+            throw new Error(`Unsupported shape: ${arr.shape}`)
           }
-        })
+        }
+        return data
+      }
+    }
 
-        const numpy2vtkType = {
-          'int8': {componentType: 'int8_t', arrayType: Int8Array },
-          'uint8': {componentType: 'uint8_t', arrayType: Uint8Array },
-          'int16': {componentType: 'int16_t', arrayType: Int16Array },
-          'uint16': {componentType: 'uint16_t', arrayType: Uint16Array },
-          'int32': {componentType: 'int32_t', arrayType: Int32Array },
-          'uint32': {componentType: 'uint32_t', arrayType: Uint32Array },
-          'float32': {componentType: 'float', arrayType: Float32Array },
-          'float64': {componentType: 'double', arrayType: Float64Array }
-        }
-        
-        function convertVtkImage(data){
-          if(data._rtype === 'ndarray'){
-            const dtype = numpy2vtkType[data._rdtype];
-            if(data._rshape.length === 2 || (data._rshape.length==3 && data._rshape[2]<=3)){
-              const dshape = data._rshape.length === 2? data._rshape : data._rshape.slice(0, 2)
-              const channels =  data._rshape.length === 3 ?  data._rshape[2] : 1;
-              return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
-                imageType: { dimension: 2, pixelType: 1, componentType: dtype.componentType, components:channels},
-                name: 'Image',
-                origin: [0,0],
-                spacing: [1,1],
-                direction: {data: [1,0,0,1]},
-                size: [dshape[1], dshape[0]],
-                data: new dtype.arrayType(data._rvalue.buffer)
-              })
-            }
-            else if(data._rshape.length === 3){
-              return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
-                imageType: { dimension: 3, pixelType: 1, componentType: dtype.componentType, components: 1},
-                name: 'image',
-                origin: [0,0,0],
-                spacing: [1,1,1],
-                direction: {data: [1,0,0,0,1,0,0,0,1]},
-                size: [dshape[2], dshape[1], dshape[0]],
-                data: new dtype.arrayType(data._rvalue.buffer)
-              })
-            }
-            else{
-              throw new Error(`Unsupported shape: ${arr.shape}`)
-            }
-          }
-          return data
-        }
+    const container = document.querySelector('.content');
+    const urlParams = new URLSearchParams(window.location.search)
+    // inside an iframe
+    if (window.self !== window.top && urlParams.get('imjoy')) {
+      setupViewerForImJoy(container)
+    } else {
+      let viewer = itkVtkViewer.processURLParameters(container, {
+        fullscreen: true
+      });
+      if (!viewer) {
+        itkVtkViewer.createViewerFromLocalFiles(container)
       }
+    }
 
-      const container = document.querySelector('.content');
-      const urlParams = new URLSearchParams(window.location.search)
-      // inside an iframe
-      if(window.self !== window.top && urlParams.get('imjoy')){
-        setupViewerForImJoy(container)
-      }
-      else{
-        let viewer = itkVtkViewer.processURLParameters(container, { fullscreen: true });
-        if (!viewer) {
-          itkVtkViewer.createViewerFromLocalFiles(container)
-        }
-      }
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>
