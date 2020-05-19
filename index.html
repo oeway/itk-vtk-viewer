@@ -68,7 +68,7 @@
         },
         imshow(image_array) {
           const vtkImage = convertVtkImage(image_array)
-          const is2D = image_array._rshape.length === 2
+          const is2D = vtkImage.getDimensions().length === 2
           itkVtkViewer.createViewer(container, {
             image: vtkImage,
             pointSets: null,
