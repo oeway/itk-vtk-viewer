@@ -87,8 +87,8 @@
         
         function convertVtkImage(data){
           if(data._rtype === 'ndarray'){
+            const dtype = numpy2vtkType[data._rdtype];
             if(data._rshape.length === 2 || (data._rshape.length==3 && data._rshape[2]<=3)){
-              const dtype = numpy2vtkType[data._rdtype];
               const dshape = data._rshape.length === 2? data._rshape : data._rshape.slice(0, 2)
               const channels =  data._rshape.length === 3 ?  data._rshape[2] : 1;
               return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
