@@ -13,6 +13,7 @@ import rgb2hex from './UserInterface/rgb2hex'
 import ViewerStore from './ViewerStore'
 import createLabelMapRendering from './Rendering/createLabelMapRendering'
 import createImageRendering from './Rendering/createImageRendering'
+import updateVolumeProperties from './Rendering/updateVolumeProperties'
 
 import { autorun, observable, reaction } from 'mobx'
 
@@ -23,6 +24,7 @@ const createViewer = (
     multiscaleImage,
     labelMap,
     multiscaleLabelMap,
+    labelMapAnnotations,
     geometries,
     pointSets,
     use2D = false,
@@ -83,8 +85,18 @@ const createViewer = (
         annotationContainer.style.fontFamily = 'monospace'
       }
 
+      if (!!labelMapAnnotations) {
+        store.imageUI.annotationMap = labelMapAnnotations
+        store.itkVtkView.setAnnotationMap(labelMapAnnotations)
+        store.itkVtkView.setLabelIndex(store.imageUI.numberOfComponents)
+        console.log(
+          `Setting annotation labelIndex to ${store.imageUI.numberOfComponents}`
+        )
+      }
+
       if (!!store.imageUI.image && !!!store.imageUI.lookupTableProxies.length) {
         createImageRendering(store, use2D)
+        updateVolumeProperties(store)
       }
 
       if (
@@ -114,15 +126,7 @@ const createViewer = (
 
         store.imageUI.source.setInputData(fusedImage)
 
-        const volume = store.imageUI.representationProxy.getVolumes()[0]
-        const volumeProperty = volume.getProperty()
-        const numberOfComponents = store.imageUI.numberOfComponents
-        for (let component = 0; component < numberOfComponents; component++) {
-          const lut = store.imageUI.lookupTableProxies[
-            component
-          ].getLookupTable()
-          volumeProperty.setRGBTransferFunction(component, lut)
-        }
+        updateVolumeProperties(store)
 
         const transferFunctionWidget = store.imageUI.transferFunctionWidget
         if (transferFunctionWidget) {
@@ -155,6 +159,7 @@ const createViewer = (
   if (!!labelMap) {
     store.imageUI.labelMap = labelMap
   }
+
   reaction(
     () => {
       const multiscaleLabelMap = store.imageUI.multiscaleLabelMap

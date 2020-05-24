@@ -30,7 +30,16 @@ function typedArrayForBuffer(typedArrayType, buffer) {
 
 export const processFiles = async (
   container,
-  { files, image, multiscaleImage, labelMap, multiscaleLabelMap, rotate, use2D }
+  {
+    files,
+    image,
+    multiscaleImage,
+    labelMap,
+    multiscaleLabelMap,
+    labelMapAnnotations,
+    rotate,
+    use2D,
+  }
 ) => {
   UserInterface.emptyContainer(container)
   UserInterface.createLoadingProgress(container)
@@ -40,6 +49,7 @@ export const processFiles = async (
     multiscaleImage,
     labelMap,
     multiscaleLabelMap,
+    labelMapAnnotations,
     use2D,
   })
   config.rotate = rotate
@@ -52,6 +62,7 @@ export const readFiles = async ({
   multiscaleImage,
   labelMap,
   multiscaleLabelMap,
+  labelMapAnnotations,
   rotate,
   use2D,
 }) => {
@@ -93,7 +104,7 @@ export const readFiles = async ({
             return Promise.resolve({ is3D, data: vtk(polyData) })
           })
           .catch(error => {
-            reject(error)
+            return Promise.reject(error)
           })
       } else if (extensionToMeshIO.has(extension)) {
         let is3D = true
@@ -143,7 +154,7 @@ export const readFiles = async ({
                 return Promise.resolve({ is3D, data: imageData })
               })
               .catch(error => {
-                reject(error)
+                return Promise.reject(error)
               })
           })
       }
@@ -155,7 +166,7 @@ export const readFiles = async ({
           return Promise.resolve({ is3D, data: imageData })
         })
         .catch(error => {
-          reject(error)
+          return Promise.reject(error)
         })
     })
     const dataSets = await Promise.all(readers)
@@ -176,19 +187,22 @@ export const readFiles = async ({
       webWorker.terminate()
       labelMapData = vtkITKHelper.convertItkToVtkImage(itkImage)
     }
+    let labelMapAnnotationData = null
+    if (!!labelMapAnnotations) {
+      labelMapAnnotationData = new Map(labelMapAnnotations)
+    }
     if (images.length > 0) {
       for (let index = 0; index < images.length; index++) {
         const dataArray = images[index].getPointData().getScalars()
         const dataType = dataArray.getDataType()
-        // Only integer-based pixels considered for label maps
-        if (
-          (!!imageData && dataType === 'Float32Array') ||
-          dataType === 'Float64Array'
-        ) {
-          imageData = images[index]
-          continue
-        }
-        if (!!imageData && !!labelMapData) {
+        if (!!!labelMapData) {
+          // Only integer-based pixels considered for label maps
+          if (dataType === 'Float32Array' || dataType === 'Float64Array') {
+            if (!!!imageData) {
+              imageData = images[index]
+            }
+            continue
+          }
           const data = dataArray.getData()
           const uniqueLabels = new Set(data).size
           // If there are more values than this, it will not be considered a
@@ -199,6 +213,9 @@ export const readFiles = async ({
           } else {
             imageData = images[index]
           }
+        }
+        if (!!!imageData) {
+          imageData = images[index]
         }
       }
     }
@@ -239,6 +256,7 @@ export const readFiles = async ({
       multiscaleImage,
       labelMap: labelMapData,
       multiscaleLabelMap,
+      labelMapAnnotations: labelMapAnnotationData,
       geometries,
       pointSets,
       use2D: !is3D,
