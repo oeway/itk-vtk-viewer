@@ -172,7 +172,7 @@
     const container = document.querySelector('.content');
     const urlParams = new URLSearchParams(window.location.search)
     // inside an iframe
-    if (window.self !== window.top && urlParams.get('imjoy')) {
+    if (window.self !== window.top) {
       setupViewerForImJoy(container)
     } else {
       let viewer = itkVtkViewer.processURLParameters(container, {
