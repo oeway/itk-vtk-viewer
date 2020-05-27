@@ -117,10 +117,10 @@
 
       function convertVtkImage(data) {
         // convert legacy ndarray encoding
-        if(data.__jailed_type__=== 'ndarray'){
+        if (data.__jailed_type__ === 'ndarray') {
           data._rtype = data.__jailed_type__;
           data._rshape = data.__shape__;
-          data._rvalue = data.__value__.buffer;
+          data._rvalue = data.__value__.buffer ? data.__value__.buffer : data.__value__;
           data._rdtype = data.__dtype__;
         }
 
