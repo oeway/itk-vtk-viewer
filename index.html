@@ -47,7 +47,7 @@
   <script>
     async function setupViewerForImJoy(container) {
       const imjoyRPC = await imjoyLoader.loadImJoyRPC({
-        'api_version': '0.2.1'
+        'api_version': '0.2.2'
       })
       const api = await imjoyRPC.setupRPC({
         name: 'itk-vtk-viewer',
@@ -134,7 +134,7 @@
                 data: [1, 0, 0, 1]
               },
               size: [data._rshape[1], data._rshape[0]],
-              data: new dtype.arrayType(data._rvalue.buffer)
+              data: new dtype.arrayType(data._rvalue)
             })
           } else if (data._rshape.length === 3) {
             return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
@@ -151,7 +151,7 @@
                 data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
               },
               size: [data._rshape[2], data._rshape[1], data._rshape[0]],
-              data: new dtype.arrayType(data._rvalue.buffer)
+              data: new dtype.arrayType(data._rvalue)
             })
           } else {
             throw new Error(`Unsupported shape: ${arr.shape}`)
