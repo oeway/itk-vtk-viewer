@@ -10,7 +10,7 @@ import vtkWidgetManager from 'vtk.js/Sources/Widgets/Core/WidgetManager'
 import * as vtkMath from 'vtk.js/Sources/Common/Core/Math'
 
 const CursorCornerAnnotation =
-  '<table class="corner-annotation" style="margin-left: 0;"><tr><td style="margin-left: auto; margin-right: 0;">Index:</td><td>${iIndex},</td><td>${jIndex},</td><td>${kIndex}</td></tr><tr><td style="margin-left: auto; margin-right: 0;">Position:</td><td>${xPosition},</td><td>${yPosition},</td><td>${zPosition}</td></tr><tr><td style="margin-left: auto; margin-right: 0;"">Value:</td><td>${value}</td></tr><tr ${annotationStyle}><td style="margin-left: auto; margin-right: 0;">Annotation:</td><td colspan="3">${annotation}</td></tr></table>'
+  '<table class="corner-annotation" style="margin-left: 0;"><tr><td style="margin-left: auto; margin-right: 0;">Index:</td><td>${iIndex},</td><td>${jIndex},</td><td>${kIndex}</td></tr><tr><td style="margin-left: auto; margin-right: 0;">Position:</td><td>${xPosition},</td><td>${yPosition},</td><td>${zPosition}</td></tr><tr><td style="margin-left: auto; margin-right: 0;"">Value:</td><td style="text-align:left;" colspan="3">${value}</td></tr><tr ${annotationStyle}><td style="margin-left: auto; margin-right: 0;">Label:</td><td style="text-align:left;" colspan="3">${annotation}</td></tr></table>'
 
 const { vtkErrorMacro } = macro
 
@@ -95,14 +95,14 @@ function ItkVtkViewProxy(publicAPI, model) {
 
   function getAnnotationText(value) {
     const labelValue = value[model.labelIndex]
-    if (model.annotationMap !== null && model.annotationMap.has(labelValue)) {
-      return model.annotationMap.get(labelValue)
+    if (model.labelNames !== null && model.labelNames.has(labelValue)) {
+      return model.labelNames.get(labelValue)
     }
     return labelValue
   }
 
   function getAnnotationStyle() {
-    return model.annotationMap === null ? 'style="display: none;"' : ''
+    return model.labelNames === null ? 'style="display: none;"' : ''
   }
 
   function updateAnnotations(callData) {
@@ -116,10 +116,10 @@ function ItkVtkViewProxy(publicAPI, model) {
       const imageData = model.volumeRepresentation.getInputDataSet()
       const size = imageData.getDimensions()
       const scalarData = imageData.getPointData().getScalars()
-      const value = scalarData.getTuple(
+      const fusedValue = scalarData.getTuple(
         size[0] * size[1] * ijk[2] + size[0] * ijk[1] + ijk[0]
       )
-      const annotation = getAnnotationText(value)
+      const annotation = getAnnotationText(fusedValue)
       const worldPositions = model.annotationPicker.getPickedPositions()
       if (ijk.length > 0 && worldPositions.length > 0) {
         const worldPosition = worldPositions[0]
@@ -133,7 +133,12 @@ function ItkVtkViewProxy(publicAPI, model) {
           xPosition: String(worldPosition[0]).substring(0, 4),
           yPosition: String(worldPosition[1]).substring(0, 4),
           zPosition: String(worldPosition[2]).substring(0, 4),
-          value,
+          value:
+            model.labelIndex === null
+              ? fusedValue
+              : fusedValue.slice(0, model.labelIndex),
+          label:
+            model.labelIndex === null ? null : fusedValue[model.labelIndex],
           annotation,
           annotationStyle: getAnnotationStyle(),
         }
@@ -500,8 +505,8 @@ const DEFAULT_VALUES = {
   viewPlanes: false,
   rotate: false,
   units: '',
-  labelIndex: 0,
-  annotationMap: null,
+  labelIndex: null,
+  labelNames: null,
   clickCallback: null,
   lastPickedValues: {
     iIndex: null,
@@ -511,6 +516,7 @@ const DEFAULT_VALUES = {
     yPosition: null,
     zPosition: null,
     value: null,
+    label: null,
   },
 }
 
@@ -524,7 +530,7 @@ export function extend(publicAPI, model, initialValues = {}) {
 
   macro.setGet(publicAPI, model, [
     'units',
-    'annotationMap',
+    'labelNames',
     'labelIndex',
     'clickCallback',
   ])

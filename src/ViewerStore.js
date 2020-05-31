@@ -1,4 +1,5 @@
 import { observable, computed } from 'mobx'
+import EventEmitter from 'eventemitter3'
 
 import vtkImageData from 'vtk.js/Sources/Common/DataModel/ImageData'
 import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray'
@@ -147,10 +148,13 @@ class ImageUIStore {
   piecewiseFunction = null
   lastSelectedLabel = null
 
+  @observable lastPickedValues = {}
+
   @observable labelMapOpacity = 0.75
   @observable labelMapCategoricalColor = 'glasbey'
 
   @observable labelMapWeights = []
+  @observable labelMapAllWeight = 1.0
   @observable selectedLabel = 'all'
 
   planeIndexUIGroup = null
@@ -359,8 +363,11 @@ class ViewerStore {
       'TrivialProducer',
       { name: 'Image' }
     )
+
+    this.eventEmitter = new EventEmitter()
   }
 
+  eventEmitter = null
   container = null
   id = 'itk-vtk-viewer'
   proxyManager = null

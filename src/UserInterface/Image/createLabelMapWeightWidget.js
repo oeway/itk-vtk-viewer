@@ -40,8 +40,9 @@ function createLabelMapWeightWidget(store, uiContainer) {
 
   const sliderEntry = document.createElement('div')
   sliderEntry.setAttribute('class', style.sliderEntry)
+  // <input type="range" min="0" max="1" value="${store.imageUI.labelMapWeights[0]}" step="0.05" id="${store.id}-labelMapWeightSlider" class="${style.slider}" />`
   sliderEntry.innerHTML = `
-    <input type="range" min="0" max="1" value="${store.imageUI.labelMapWeights[0]}" step="0.05" id="${store.id}-labelMapWeightSlider" class="${style.slider}" />`
+    <input type="range" min="0" max="1" value="1.0" step="0.05" id="${store.id}-labelMapWeightSlider" class="${style.slider}" />`
   const weightElement = sliderEntry.querySelector(
     `#${store.id}-labelMapWeightSlider`
   )
@@ -53,11 +54,13 @@ function createLabelMapWeightWidget(store, uiContainer) {
   uiContainer.appendChild(labelMapWeightUIGroup)
 
   function pushLabelWeight() {
+    let updateIndex = 'all'
     if (store.imageUI.selectedLabel !== 'all') {
       weightElement.value =
         store.imageUI.labelMapWeights[store.imageUI.selectedLabel]
+      updateIndex = [store.imageUI.selectedLabel]
     }
-    updateLabelMapPiecewiseFunction(store, store.imageUI.selectedLabel)
+    updateLabelMapPiecewiseFunction(store, updateIndex)
     store.renderWindow.render()
   }
 
@@ -87,9 +90,11 @@ function createLabelMapWeightWidget(store, uiContainer) {
     event.preventDefault()
     event.stopPropagation()
     if (store.imageUI.selectedLabel === 'all') {
+      const weight = Number(weightElement.value)
       for (let i = 0; i < store.imageUI.labelMapWeights.length; i++) {
-        store.imageUI.labelMapWeights[i] = Number(weightElement.value)
+        store.imageUI.labelMapWeights[i] = weight
       }
+      store.imageUI.labelMapAllWeight = weight
     } else {
       store.imageUI.labelMapWeights[store.imageUI.selectedLabel] = Number(
         weightElement.value
