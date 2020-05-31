@@ -25,7 +25,7 @@
     "open": "^6.4.0",
     "promise-file-reader": "^1.0.2",
     "regenerator-runtime": "^0.13.5",
-    "vtk.js": "^14.1.2"
+    "vtk.js": "^13.18.2"
   },
   "devDependencies": {
     "@babel/plugin-transform-runtime": "^7.9.6",
@@ -69,7 +69,7 @@
     "bundle": "StandaloneHTML ./dist/index.html ./dist/ItkVtkViewer.html",
     "commit": "git cz",
     "format": "prettier --write src/UserInterface/**/*.js src/*.js",
-    "start": "webpack-dev-server --mode development --content-base ./dist/ --watch-content-base",
+    "start": "webpack-dev-server --mode development --content-base ./dist/ --watch-content-base --port 5000",
     "semantic-release": "semantic-release",
     "test": "karma start ./karma.conf.js --browsers Chrome,Firefox",
     "test:debug": "karma start ./karma.conf.js --no-single-run"
