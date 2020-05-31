@@ -47,7 +47,7 @@
   <script>
     async function setupViewerForImJoy(container) {
       const imjoyRPC = await imjoyLoader.loadImJoyRPC({
-        'api_version': '0.2.2'
+        'api_version': '0.2.3'
       })
       const api = await imjoyRPC.setupRPC({
         name: 'itk-vtk-viewer',
@@ -55,19 +55,23 @@
         description: '2D / 3D web image, mesh, and point set viewer using itk.js and vtk.js ',
         type: 'rpc-window',
       })
+      api.registerCodec({
+        name: 'itkimage',
+        decoder: itkVtkViewer.utils.decompressImage
+      })
       api.export({
         setup() {
           api.log("itk-vtk-viewer loaded successfully.")
         },
         async run(ctx) {
           if (ctx.data && ctx.data.image_array) {
-            this.imshow(ctx.data.image_array)
+            await this.imshow(ctx.data.image_array)
           } else {
             itkVtkViewer.createViewerFromLocalFiles(container)
           }
         },
-        imshow(image_array) {
-          const vtkImage = convertVtkImage(image_array)
+        async imshow(image_array) {
+          const vtkImage = itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage(image_array)
           const dims = vtkImage.getDimensions()
           const is2D = dims.length === 2 || (dims.length === 3 && dims[2] === 1)
           itkVtkViewer.createViewer(container, {
@@ -79,94 +83,6 @@
           })
         }
       })
-
-      const numpy2vtkType = {
-        'int8': {
-          componentType: 'int8_t',
-          arrayType: Int8Array
-        },
-        'uint8': {
-          componentType: 'uint8_t',
-          arrayType: Uint8Array
-        },
-        'int16': {
-          componentType: 'int16_t',
-          arrayType: Int16Array
-        },
-        'uint16': {
-          componentType: 'uint16_t',
-          arrayType: Uint16Array
-        },
-        'int32': {
-          componentType: 'int32_t',
-          arrayType: Int32Array
-        },
-        'uint32': {
-          componentType: 'uint32_t',
-          arrayType: Uint32Array
-        },
-        'float32': {
-          componentType: 'float',
-          arrayType: Float32Array
-        },
-        'float64': {
-          componentType: 'double',
-          arrayType: Float64Array
-        }
-      }
-
-      function convertVtkImage(data) {
-        // convert legacy ndarray encoding
-        if (data.__jailed_type__ === 'ndarray') {
-          data._rtype = data.__jailed_type__;
-          data._rshape = data.__shape__;
-          data._rvalue = data.__value__.buffer ? data.__value__.buffer : data.__value__;
-          data._rdtype = data.__dtype__;
-        }
-
-        if (data._rtype === 'ndarray') {
-          const dtype = numpy2vtkType[data._rdtype];
-          if (data._rshape.length === 2 || (data._rshape.length == 3 && data._rshape[2] <= 3)) {
-            const channels = data._rshape.length === 3 ? data._rshape[2] : 1;
-            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
-              imageType: {
-                dimension: 2,
-                pixelType: 1,
-                componentType: dtype.componentType,
-                components: channels
-              },
-              name: 'Image',
-              origin: [0, 0],
-              spacing: [1, 1],
-              direction: {
-                data: [1, 0, 0, 1]
-              },
-              size: [data._rshape[1], data._rshape[0]],
-              data: new dtype.arrayType(data._rvalue)
-            })
-          } else if (data._rshape.length === 3) {
-            return itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage({
-              imageType: {
-                dimension: 3,
-                pixelType: 1,
-                componentType: dtype.componentType,
-                components: 1
-              },
-              name: 'Volume',
-              origin: [0, 0, 0],
-              spacing: [1, 1, 1],
-              direction: {
-                data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
-              },
-              size: [data._rshape[2], data._rshape[1], data._rshape[0]],
-              data: new dtype.arrayType(data._rvalue)
-            })
-          } else {
-            throw new Error(`Unsupported shape: ${arr.shape}`)
-          }
-        }
-        return data
-      }
     }
 
     const container = document.querySelector('.content');
