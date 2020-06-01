@@ -57,7 +57,11 @@
       })
       api.registerCodec({
         name: 'itkimage',
-        decoder: itkVtkViewer.utils.decompressImage
+        decoder: itkVtkViewer.utils.convertToItkImage
+      })
+      api.registerCodec({
+        name: 'ndarray',
+        decoder: itkVtkViewer.utils.ndarrayToItkImage
       })
       api.export({
         setup() {

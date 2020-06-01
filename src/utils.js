@@ -16,7 +16,7 @@ const cores = navigator.hardwareConcurrency ? navigator.hardwareConcurrency : 4
 const numberOfWorkers = cores + Math.floor(Math.sqrt(cores))
 const workerPool = new WorkerPool(numberOfWorkers, runPipelineBrowser)
 
-export async function decompressImage(image) {
+export async function convertToItkImage(image) {
   if (image.data) {
     return image
   }
@@ -66,8 +66,19 @@ export async function decompressImage(image) {
   const numberOfBytes = pixelCount * image.imageType.components * componentSize
   const pipelinePath = 'ZstdDecompress'
   const args = ['input.bin', 'output.bin', String(numberOfBytes)]
-  const desiredOutputs = [{ path: 'output.bin', type: IOTypes.Binary }]
-  const inputs = [{ path: 'input.bin', type: IOTypes.Binary, data: byteArray }]
+  const desiredOutputs = [
+    {
+      path: 'output.bin',
+      type: IOTypes.Binary,
+    },
+  ]
+  const inputs = [
+    {
+      path: 'input.bin',
+      type: IOTypes.Binary,
+      data: byteArray,
+    },
+  ]
   console.log(`input MB: ${byteArray.length / 1000 / 1000}`)
   console.log(`output MB: ${numberOfBytes / 1000 / 1000}`)
   const compressionAmount = byteArray.length / numberOfBytes
@@ -131,8 +142,19 @@ export function decompressDataValue(polyData, prop) {
   const numberOfBytes = polyData[prop].size * elementSize
   const pipelinePath = 'ZstdDecompress'
   const args = ['input.bin', 'output.bin', String(numberOfBytes)]
-  const desiredOutputs = [{ path: 'output.bin', type: IOTypes.Binary }]
-  const inputs = [{ path: 'input.bin', type: IOTypes.Binary, data: byteArray }]
+  const desiredOutputs = [
+    {
+      path: 'output.bin',
+      type: IOTypes.Binary,
+    },
+  ]
+  const inputs = [
+    {
+      path: 'input.bin',
+      type: IOTypes.Binary,
+      data: byteArray,
+    },
+  ]
   console.log(`${prop} input MB: ${byteArray.length / 1000 / 1000}`)
   console.log(`${prop} output MB: ${numberOfBytes / 1000 / 1000}`)
   const compressionAmount = byteArray.length / numberOfBytes
@@ -173,9 +195,18 @@ export async function decompressPolyData(polyData) {
     const numberOfBytes = polyData[prop].size * elementSize
     const pipelinePath = 'ZstdDecompress'
     const args = ['input.bin', 'output.bin', String(numberOfBytes)]
-    const desiredOutputs = [{ path: 'output.bin', type: IOTypes.Binary }]
+    const desiredOutputs = [
+      {
+        path: 'output.bin',
+        type: IOTypes.Binary,
+      },
+    ]
     const inputs = [
-      { path: 'input.bin', type: IOTypes.Binary, data: byteArray },
+      {
+        path: 'input.bin',
+        type: IOTypes.Binary,
+        data: byteArray,
+      },
     ]
     console.log(`${prop} input MB: ${byteArray.length / 1000 / 1000}`)
     console.log(`${prop} output MB: ${numberOfBytes / 1000 / 1000}`)
@@ -195,9 +226,18 @@ export async function decompressPolyData(polyData) {
       const numberOfBytes = array.data.size * elementSize
       const pipelinePath = 'ZstdDecompress'
       const args = ['input.bin', 'output.bin', String(numberOfBytes)]
-      const desiredOutputs = [{ path: 'output.bin', type: IOTypes.Binary }]
+      const desiredOutputs = [
+        {
+          path: 'output.bin',
+          type: IOTypes.Binary,
+        },
+      ]
       const inputs = [
-        { path: 'input.bin', type: IOTypes.Binary, data: byteArray },
+        {
+          path: 'input.bin',
+          type: IOTypes.Binary,
+          data: byteArray,
+        },
       ]
       console.log(`${array} input MB: ${byteArray.length / 1000 / 1000}`)
       console.log(`${array} output MB: ${numberOfBytes / 1000 / 1000}`)
@@ -218,9 +258,18 @@ export async function decompressPolyData(polyData) {
       const numberOfBytes = array.data.size * elementSize
       const pipelinePath = 'ZstdDecompress'
       const args = ['input.bin', 'output.bin', String(numberOfBytes)]
-      const desiredOutputs = [{ path: 'output.bin', type: IOTypes.Binary }]
+      const desiredOutputs = [
+        {
+          path: 'output.bin',
+          type: IOTypes.Binary,
+        },
+      ]
       const inputs = [
-        { path: 'input.bin', type: IOTypes.Binary, data: byteArray },
+        {
+          path: 'input.bin',
+          type: IOTypes.Binary,
+          data: byteArray,
+        },
       ]
       console.log(`${array} input MB: ${byteArray.length / 1000 / 1000}`)
       console.log(`${array} output MB: ${numberOfBytes / 1000 / 1000}`)
@@ -230,4 +279,97 @@ export async function decompressPolyData(polyData) {
       decompressedCellData.push(array)
     }
   }
+}
+
+const numpy2vtkType = {
+  int8: {
+    componentType: 'int8_t',
+    arrayType: Int8Array,
+  },
+  uint8: {
+    componentType: 'uint8_t',
+    arrayType: Uint8Array,
+  },
+  int16: {
+    componentType: 'int16_t',
+    arrayType: Int16Array,
+  },
+  uint16: {
+    componentType: 'uint16_t',
+    arrayType: Uint16Array,
+  },
+  int32: {
+    componentType: 'int32_t',
+    arrayType: Int32Array,
+  },
+  uint32: {
+    componentType: 'uint32_t',
+    arrayType: Uint32Array,
+  },
+  float32: {
+    componentType: 'float',
+    arrayType: Float32Array,
+  },
+  float64: {
+    componentType: 'double',
+    arrayType: Float64Array,
+  },
+}
+
+export function ndarrayToItkImage(data) {
+  // convert legacy ndarray encoding
+  if (data.__jailed_type__ === 'ndarray') {
+    data._rtype = data.__jailed_type__
+    data._rshape = data.__shape__
+    data._rvalue = data.__value__.buffer
+      ? data.__value__.buffer
+      : data.__value__
+    data._rdtype = data.__dtype__
+  }
+
+  if (data._rtype === 'ndarray') {
+    const dtype = numpy2vtkType[data._rdtype]
+    if (
+      data._rshape.length === 2 ||
+      (data._rshape.length == 3 && data._rshape[2] <= 3)
+    ) {
+      const channels = data._rshape.length === 3 ? data._rshape[2] : 1
+      return {
+        imageType: {
+          dimension: 2,
+          pixelType: 1,
+          componentType: dtype.componentType,
+          components: channels,
+        },
+        name: 'Image',
+        origin: [0, 0],
+        spacing: [1, 1],
+        direction: {
+          data: [1, 0, 0, 1],
+        },
+        size: [data._rshape[1], data._rshape[0]],
+        data: new dtype.arrayType(data._rvalue),
+      }
+    } else if (data._rshape.length === 3) {
+      return {
+        imageType: {
+          dimension: 3,
+          pixelType: 1,
+          componentType: dtype.componentType,
+          components: 1,
+        },
+        name: 'Volume',
+        origin: [0, 0, 0],
+        spacing: [1, 1, 1],
+        direction: {
+          data: [1, 0, 0, 0, 1, 0, 0, 0, 1],
+        },
+        size: [data._rshape[2], data._rshape[1], data._rshape[0]],
+        data: new dtype.arrayType(data._rvalue),
+      }
+    } else {
+      throw new Error(`Unsupported shape: ${arr.shape}`)
+    }
+  }
+  return data
 }
