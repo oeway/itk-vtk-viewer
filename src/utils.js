@@ -331,7 +331,7 @@ export function ndarrayToItkImage(data) {
     const dtype = numpy2vtkType[data._rdtype]
     if (
       data._rshape.length === 2 ||
-      (data._rshape.length == 3 && data._rshape[2] <= 3)
+      (data._rshape.length == 3 && data._rshape[2] <= 4)
     ) {
       const channels = data._rshape.length === 3 ? data._rshape[2] : 1
       return {
