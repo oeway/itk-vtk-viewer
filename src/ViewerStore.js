@@ -3,6 +3,7 @@ import EventEmitter from 'eventemitter3'
 
 import vtkImageData from 'vtk.js/Sources/Common/DataModel/ImageData'
 import vtkDataArray from 'vtk.js/Sources/Common/Core/DataArray'
+import { VtkDataTypes } from 'vtk.js/Sources/Common/Core/DataArray/Constants'
 
 const STYLE_CONTAINER = {
   position: 'relative',
@@ -67,7 +68,7 @@ class ImageUIStore {
 
   @observable colorMaps = null
   @observable colorRanges = []
-  opacityGaussians = []
+  @observable opacityGaussians = []
 
   @observable blendMode = 0
   @observable useShadow = true
@@ -148,21 +149,23 @@ class ImageUIStore {
       !!!this.multiscaleImage
     )
   }
+  @computed get haveLabelMap() {
+    return !!this.labelMap || !!this.multiscaleLabelMap
+  }
 
   labelMapColorUIGroup = null
   labelMapLookupTableProxy = null
   // Sorted array of label values
   labelMapLabels = null
   piecewiseFunction = null
-  lastSelectedLabel = null
 
   @observable lastPickedValues = {}
 
-  @observable labelMapOpacity = 0.75
+  @observable labelMapOpacity = 0.5
   @observable labelMapCategoricalColor = 'glasbey'
 
   @observable labelMapWeights = []
-  @observable labelMapAllWeight = 1.0
+  @observable labelMapToggleWeight = 0.1
   @observable selectedLabel = 'all'
 
   planeIndexUIGroup = null
@@ -193,11 +196,26 @@ class GeometriesUIStore {
   colorRangesReactions = new Map()
   @computed get hasScalars() {
     return this.geometries.map(geometry => {
-      const pointData = geometry.getPointData()
-      const hasPointDataScalars = !!pointData.getScalars()
-      const cellData = geometry.getCellData()
-      const hasCellDataScalars = !!cellData.getScalars()
-      return hasPointDataScalars || hasCellDataScalars
+      const pointDataScalars = !!geometry.getPointData().getScalars()
+      const cellDataScalars = !!geometry.getCellData().getScalars()
+
+      return pointDataScalars || cellDataScalars
+    })
+  }
+  @computed get hasOnlyDirectColors() {
+    return this.geometries.map(geometry => {
+      const pointDataScalars = geometry.getPointData().getScalars()
+      const pointDataDirectColors =
+        !!pointDataScalars &&
+        pointDataScalars.getDataType() === VtkDataTypes.UNSIGNED_CHAR &&
+        pointDataScalars.getNumberOfComponents() === 3
+      const cellDataScalars = geometry.getCellData().getScalars()
+      const cellDataDirectColors =
+        !!cellDataScalars &&
+        cellDataScalars.getDataType() === VtkDataTypes.UNSIGNED_CHAR &&
+        cellDataScalars.getNumberOfComponents() === 3
+
+      return pointDataDirectColors && cellDataDirectColors
     })
   }
   @computed get colorByOptions() {

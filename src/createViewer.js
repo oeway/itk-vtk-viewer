@@ -9,6 +9,7 @@ import UserInterface from './UserInterface'
 import createLabelMapColorWidget from './UserInterface/Image/createLabelMapColorWidget'
 import createLabelMapWeightWidget from './UserInterface/Image/createLabelMapWeightWidget'
 import createPlaneIndexSliders from './UserInterface/Image/createPlaneIndexSliders'
+import updateTransferFunctionWidget from './UserInterface/Image/updateTransferFunctionWidget'
 import addKeyboardShortcuts from './addKeyboardShortcuts'
 import rgb2hex from './UserInterface/rgb2hex'
 import ViewerStore from './ViewerStore'
@@ -19,7 +20,7 @@ import updateLabelMapPiecewiseFunction from './Rendering/updateLabelMapPiecewise
 import updateVolumeProperties from './Rendering/updateVolumeProperties'
 import updateGradientOpacity from './Rendering/updateGradientOpacity'
 
-import { autorun, observable, reaction } from 'mobx'
+import { autorun, observable, reaction, toJS } from 'mobx'
 
 const createViewer = (
   rootContainer,
@@ -63,7 +64,7 @@ const createViewer = (
           store.imageUI.labelMapWeights[store.imageUI.selectedLabel]
         if (currentWeight === 1.0) {
           store.imageUI.labelMapWeights[store.imageUI.selectedLabel] =
-            store.imageUI.labelMapAllWeight
+            store.imageUI.labelMapToggleWeight
         } else {
           store.imageUI.labelMapWeights[store.imageUI.selectedLabel] = 1.0
         }
@@ -399,7 +400,6 @@ const createViewer = (
       if (!tooLow) {
         return
       }
-      console.log('FPS is too low!')
     }
   )
   function updateFPS() {
@@ -408,8 +408,6 @@ const createViewer = (
     fps.push(nextFPS)
     fps.shift()
     const mean = Math.round((fps[0] + fps[1] + fps[2]) / 3)
-    // console.log(nextFPS)
-    // console.log(mean)
     if (mean < 20) {
       store.mainUI.fpsTooLow = true
     }
@@ -455,6 +453,14 @@ const createViewer = (
     store.imageUI.labelMap = labelMap
   }
 
+  publicAPI.setLabelMapNames = names => {
+    store.itkVtkView.setLabelNames(names)
+  }
+
+  publicAPI.getLabelMapNames = () => {
+    return store.itkVtkView.getLabelNames()
+  }
+
   publicAPI.setUserInterfaceCollapsed = collapse => {
     const collapsed = store.mainUI.collapsed
     if ((collapse && !collapsed) || (!collapse && collapsed)) {
@@ -472,6 +478,8 @@ const createViewer = (
     'imagePicked',
     'labelMapWeightsChanged',
     'toggleUserInterfaceCollapsed',
+    'opacityGaussiansChanged',
+    'componentVisibilitiesChanged',
     'toggleAnnotations',
     'toggleRotate',
     'toggleFullscreen',
@@ -568,6 +576,49 @@ const createViewer = (
     const collapsed = store.mainUI.collapsed
     eventEmitter.emit('toggleUserInterfaceCollapsed', collapsed)
   })
+
+  publicAPI.getOpacityGaussians = () => store.imageUI.opacityGaussians.slice()
+
+  publicAPI.setOpacityGaussians = gaussians => {
+    store.imageUI.opacityGaussians.replace(gaussians)
+    updateTransferFunctionWidget(store)
+    store.renderWindow.render()
+  }
+
+  function emitOpacityGaussians() {
+    eventEmitter.emit(
+      'opacityGaussiansChanged',
+      toJS(store.imageUI.opacityGaussians)
+    )
+  }
+
+  reaction(() => {
+    return store.imageUI.opacityGaussians.map((glist, compIdx) =>
+      glist.map(
+        (g, gIdx) =>
+          `${compIdx}:${gIdx}:${g.position}:${g.height}:${g.width}:${g.xBias}:${g.yBias}`
+      )
+    )
+  }, macro.debounce(emitOpacityGaussians, 100))
+
+  publicAPI.getComponentVisibilities = () => {
+    return store.imageUI.componentVisibilities.map(compVis => compVis.visible)
+  }
+
+  publicAPI.setComponentVisibilities = visibilities => {
+    visibilities.forEach((visibility, index) => {
+      store.imageUI.componentVisibilities[index].visible = visibility
+    })
+  }
+
+  reaction(
+    () => {
+      return store.imageUI.componentVisibilities.map(compVis => compVis.visible)
+    },
+    visibilities => {
+      eventEmitter.emit('componentVisibilitiesChanged', visibilities)
+    }
+  )
 
   // Start collapsed on mobile devices or small pages
   if (window.screen.availWidth < 768 || window.screen.availHeight < 800) {
