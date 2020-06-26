@@ -22,7 +22,7 @@ function createLabelMapColorWidget(store, uiContainer) {
   labelMapWidgetRow.className += ` ${viewerDOMId}-toggle`
 
   const categoricalColorSelector = document.createElement('div')
-  categoricalColorSelector.id = `${store.id}-labelMapCategoricalColorSelector`
+  categoricalColorSelector.id = `${store.id}-labelMapLookupTableSelector`
 
   const iconSelector = createCategoricalColorIconSelector(
     categoricalColorSelector
@@ -30,7 +30,7 @@ function createLabelMapColorWidget(store, uiContainer) {
 
   let customIcon = null
   function updateDisplayedCategoricalColor() {
-    const categoricalColor = store.imageUI.labelMapCategoricalColor
+    const categoricalColor = store.imageUI.labelMapLookupTable
 
     const lookupTableProxy = store.imageUI.labelMapLookupTableProxy
     const colorTransferFunction = lookupTableProxy.getLookupTable()
@@ -75,7 +75,7 @@ function createLabelMapColorWidget(store, uiContainer) {
   }
   reaction(
     () => {
-      return store.imageUI.labelMapCategoricalColor
+      return store.imageUI.labelMapLookupTable
     },
     categoricalColor => {
       updateDisplayedCategoricalColor()
@@ -86,15 +86,15 @@ function createLabelMapColorWidget(store, uiContainer) {
     action(event => {
       event.preventDefault()
       event.stopPropagation()
-      store.imageUI.labelMapCategoricalColor = iconSelector.getSelectedValue()
+      store.imageUI.labelMapLookupTable = iconSelector.getSelectedValue()
     })
   )
-  iconSelector.setSelectedValue(store.imageUI.labelMapCategoricalColor)
+  iconSelector.setSelectedValue(store.imageUI.labelMapLookupTable)
 
   const sliderEntry = document.createElement('div')
   sliderEntry.setAttribute('class', style.sliderEntry)
   sliderEntry.innerHTML = `
-    <div itk-vtk-tooltip itk-vtk-tooltip-top itk-vtk-tooltip-content="Label map component weight" class="${style.gradientOpacitySlider}">
+    <div itk-vtk-tooltip itk-vtk-tooltip-top itk-vtk-tooltip-content="Label map blend" class="${style.gradientOpacitySlider}">
       ${opacityIcon}
     </div>
     <input type="range" min="0" max="1" value="${store.imageUI.labelMapBlend}" step="0.01"

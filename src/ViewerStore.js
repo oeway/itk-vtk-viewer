@@ -59,6 +59,15 @@ class ImageUIStore {
   piecewiseFunctionProxies = []
   @observable componentVisibilities = []
   transferFunctionWidget = null
+  transferFunctionManipulator = {
+    rangeManipulator: null,
+    windowMotionScale: 150.0,
+    levelMotionScale: 150.0,
+    windowGet: null,
+    windowSet: null,
+    levelGet: null,
+    levelSet: null,
+  }
   independentComponents = true
 
   imageUIGroup = null
@@ -74,6 +83,7 @@ class ImageUIStore {
   @observable useShadow = true
   @observable slicingPlanesEnabled = false
   @observable gradientOpacity = 0.2
+  @observable volumeSampleDistance = 0.25
   @observable xSlice = null
   @observable ySlice = null
   @observable zSlice = null
@@ -162,7 +172,7 @@ class ImageUIStore {
   @observable lastPickedValues = {}
 
   @observable labelMapBlend = 0.5
-  @observable labelMapCategoricalColor = 'glasbey'
+  @observable labelMapLookupTable = 'glasbey'
 
   @observable labelMapWeights = []
   @observable labelMapToggleWeight = 0.1
@@ -304,6 +314,9 @@ class PointSetsUIStore {
   @observable sizes = []
   @observable colorRanges = new Map()
   colorRangesReactions = new Map()
+
+  lengthPixelRatio = 0.1
+
   @computed get hasScalars() {
     return this.pointSets.map(pointSet => {
       const pointData = pointSet.getPointData()

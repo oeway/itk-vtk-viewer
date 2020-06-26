@@ -4,6 +4,7 @@ import vtkLookupTableProxy from 'vtk.js/Sources/Proxy/Core/LookupTableProxy'
 
 import style from '../ItkVtkViewer.module.css'
 
+import applyPiecewiseFunctionOpacities from '../../Rendering/applyPiecewiseFunctionOpacities'
 import createColorMapIconSelector from '../createColorMapIconSelector'
 import customColorMapIcon from '../customColorMapIcon'
 
@@ -22,10 +23,8 @@ function createColorRangeInput(store, uiContainer) {
       const range = dataArray.getRange(component)
       minimumInput.min = range[0]
       minimumInput.max = range[1]
-      minimumInput.value = range[0]
       maximumInput.min = range[0]
       maximumInput.max = range[1]
-      maximumInput.value = range[1]
       if (
         dataArray instanceof Float32Array ||
         dataArray instanceof Float64Array
@@ -34,7 +33,11 @@ function createColorRangeInput(store, uiContainer) {
         minimumInput.step = step
         maximumInput.step = step
       }
-      store.imageUI.colorRanges[component] = range
+      if (store.imageUI.colorRanges.length - 1 < component) {
+        minimumInput.value = range[0]
+        maximumInput.value = range[1]
+        store.imageUI.colorRanges[component] = range
+      }
     }
   }
   reaction(
@@ -49,8 +52,12 @@ function createColorRangeInput(store, uiContainer) {
   function updateDisplayedRange() {
     const colorRange =
       store.imageUI.colorRanges[store.imageUI.selectedComponentIndex]
-    minimumInput.value = colorRange[0]
-    maximumInput.value = colorRange[1]
+    if (typeof colorRange[0] !== 'undefined') {
+      minimumInput.value = colorRange[0]
+    }
+    if (typeof colorRange[1] !== 'undefined') {
+      maximumInput.value = colorRange[1]
+    }
   }
   reaction(
     () => {
@@ -115,12 +122,10 @@ function createColorRangeInput(store, uiContainer) {
     const colorTransferFunction = lookupTableProxy.getLookupTable()
 
     const transferFunctionWidget = store.imageUI.transferFunctionWidget
-    const piecewiseFunction = store.imageUI.piecewiseFunctionProxies[
-      component
-    ].getPiecewiseFunction()
+
     if (colorMap.startsWith('Custom')) {
       lookupTableProxy.setMode(vtkLookupTableProxy.Mode.RGBPoints)
-      transferFunctionWidget.applyOpacity(piecewiseFunction)
+      applyPiecewiseFunctionOpacities(store, component)
       const colorDataRange = transferFunctionWidget.getOpacityRange()
       if (!!colorDataRange) {
         colorTransferFunction.setMappingRange(...colorDataRange)
@@ -151,7 +156,7 @@ function createColorRangeInput(store, uiContainer) {
     } else {
       lookupTableProxy.setPresetName(colorMap)
       lookupTableProxy.setMode(vtkLookupTableProxy.Mode.Preset)
-      transferFunctionWidget.applyOpacity(piecewiseFunction)
+      applyPiecewiseFunctionOpacities(store, component)
       const colorDataRange = transferFunctionWidget.getOpacityRange()
       if (!!colorDataRange) {
         colorTransferFunction.setMappingRange(...colorDataRange)
