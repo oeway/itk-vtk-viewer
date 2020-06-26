@@ -373,7 +373,7 @@ export function ndarrayToItkImage(data) {
           dimension: 3,
           pixelType: 1,
           componentType: dtype.componentType,
-          components: data._rshape[0],
+          components: data._rshape[3],
         },
         name: 'Volume',
         origin: [0, 0, 0],
@@ -381,7 +381,7 @@ export function ndarrayToItkImage(data) {
         direction: {
           data: [1, 0, 0, 0, 1, 0, 0, 0, 1],
         },
-        size: [data._rshape[3], data._rshape[2], data._rshape[1]],
+        size: [data._rshape[2], data._rshape[1], data._rshape[0]],
         data: new dtype.arrayType(data._rvalue),
       }
     } else {
