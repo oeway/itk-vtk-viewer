@@ -74,72 +74,14 @@ module.exports = [
           to: path.join(__dirname, 'dist', 'itk', 'Pipelines'),
         },
         {
-          from: path.join(__dirname, 'src', 'blosc-zarr', 'web-build'),
+          from: path.join(
+            __dirname,
+            'src',
+            'Compression',
+            'blosc-zarr',
+            'web-build'
+          ),
           to: path.join(__dirname, 'dist', 'itk', 'Pipelines'),
-        },
-        {
-          from: path.join(
-            __dirname,
-            'node_modules',
-            'itk',
-            'WebWorkers',
-            'Pipeline.worker.js'
-          ),
-          to: path.join(
-            __dirname,
-            'dist',
-            'itk',
-            'WebWorkers',
-            'Pipeline.worker.js'
-          ),
-        },
-        {
-          from: path.join(
-            __dirname,
-            'src',
-            'ZstdDecompress',
-            'web-build',
-            'ZstdDecompress.js'
-          ),
-          to: path.join(
-            __dirname,
-            'dist',
-            'itk',
-            'Pipelines',
-            'ZstdDecompress.js'
-          ),
-        },
-        {
-          from: path.join(
-            __dirname,
-            'src',
-            'ZstdDecompress',
-            'web-build',
-            'ZstdDecompressWasm.js'
-          ),
-          to: path.join(
-            __dirname,
-            'dist',
-            'itk',
-            'Pipelines',
-            'ZstdDecompressWasm.js'
-          ),
-        },
-        {
-          from: path.join(
-            __dirname,
-            'src',
-            'ZstdDecompress',
-            'web-build',
-            'ZstdDecompressWasm.wasm'
-          ),
-          to: path.join(
-            __dirname,
-            'dist',
-            'itk',
-            'Pipelines',
-            'ZstdDecompressWasm.wasm'
-          ),
         },
       ]),
       // workbox plugin should be last plugin

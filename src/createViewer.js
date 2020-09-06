@@ -4,13 +4,13 @@ import vtkITKHelper from 'vtk.js/Sources/Common/DataModel/ITKHelper'
 
 import ResizeSensor from 'css-element-queries/src/ResizeSensor'
 
-import proxyConfiguration from './proxyManagerConfiguration'
+import proxyConfiguration from './vtk/proxyManagerConfiguration'
 import UserInterface from './UserInterface'
 import createLabelMapColorWidget from './UserInterface/Image/createLabelMapColorWidget'
 import createLabelMapWeightWidget from './UserInterface/Image/createLabelMapWeightWidget'
 import createPlaneIndexSliders from './UserInterface/Image/createPlaneIndexSliders'
 import updateTransferFunctionWidget from './UserInterface/Image/updateTransferFunctionWidget'
-import addKeyboardShortcuts from './addKeyboardShortcuts'
+import addKeyboardShortcuts from './UserInterface/addKeyboardShortcuts'
 import rgb2hex from './UserInterface/rgb2hex'
 import hex2rgb from './UserInterface/hex2rgb'
 import ViewerStore from './ViewerStore'
@@ -476,13 +476,14 @@ const createViewer = (
     'opacityGaussiansChanged',
     'componentVisibilitiesChanged',
     'toggleAnnotations',
+    'toggleAxes',
     'toggleRotate',
     'toggleFullscreen',
     'toggleInterpolation',
     'toggleCroppingPlanes',
     'croppingPlanesChanged',
     'resetCrop',
-    'changeColorRange',
+    'colorRangesChanged',
     'selectColorMap',
     'selectLookupTable',
     'viewModeChanged',
@@ -515,7 +516,7 @@ const createViewer = (
     },
     () => {
       const lastPickedValues = store.imageUI.lastPickedValues
-      eventEmitter.emit('imagePicked', lastPickedValues)
+      eventEmitter.emit('imagePicked', toJS(lastPickedValues))
     }
   )
 
@@ -657,6 +658,18 @@ const createViewer = (
   }
 
   autorun(() => {
+    const enabled = store.mainUI.axesEnabled
+    eventEmitter.emit('toggleAxes', enabled)
+  })
+
+  publicAPI.setAxesEnabled = enabled => {
+    const axes = store.mainUI.axesEnabled
+    if ((enabled && !axes) || (!enabled && axes)) {
+      store.mainUI.axesEnabled = enabled
+    }
+  }
+
+  autorun(() => {
     const enabled = store.mainUI.rotateEnabled
     eventEmitter.emit('toggleRotate', enabled)
   })
@@ -708,12 +721,7 @@ const createViewer = (
 
   autorun(() => {
     const colorRanges = store.imageUI.colorRanges
-    const selectedComponentIndex = store.imageUI.selectedComponentIndex
-    eventEmitter.emit(
-      'changeColorRange',
-      selectedComponentIndex,
-      colorRanges[selectedComponentIndex]
-    )
+    eventEmitter.emit('colorRangesChanged', colorRanges)
   })
 
   publicAPI.setColorRange = (componentIndex, colorRange) => {

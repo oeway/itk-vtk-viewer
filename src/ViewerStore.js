@@ -22,6 +22,7 @@ class MainUIStore {
   uiContainer = null
   @observable collapsed = false
   @observable annotationsEnabled = true
+  @observable axesEnabled = false
   @observable fullscreenEnabled = false
   @observable rotateEnabled = false
   @observable interpolationEnabled = true
@@ -426,10 +427,10 @@ class ViewerStore {
     [0.5, 0.5, 0.5],
   ]
 
-  selectedBackgroundColor = 0
+  selectedBackgroundColor = 2
 
   @observable style = {
-    backgroundColor: [0, 0, 0],
+    backgroundColor: [0.5, 0.5, 0.5],
     containerStyle: STYLE_CONTAINER,
   }
 
