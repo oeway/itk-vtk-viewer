@@ -78,13 +78,22 @@
           const vtkImage = itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage(image_array)
           const dims = vtkImage.getDimensions()
           const is2D = dims.length === 2 || (dims.length === 3 && dims[2] === 1)
-          itkVtkViewer.createViewer(container, {
-            image: vtkImage,
-            pointSets: null,
-            geometries: null,
-            use2D: is2D,
-            rotate: false
-          })
+
+          // try to reuse the last viewer if there is no change in the image dimensions
+          if(this.viewer && JSON.stringify(dims) == JSON.stringify(this.last_dims)){
+            this.viewer.setImage(vtkImage);
+            this.viewer.getStore().renderWindow.render();
+          }
+          else{
+            this.viewer = itkVtkViewer.createViewer(container, {
+              image: vtkImage,
+              pointSets: null,
+              geometries: null,
+              use2D: is2D,
+              rotate: false
+            })
+            this.last_dims = dims;
+          }
         }
       })
     }
