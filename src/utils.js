@@ -385,7 +385,7 @@ export function ndarrayToItkImage(data) {
         data: new dtype.arrayType(data._rvalue),
       }
     } else {
-      throw new Error(`Unsupported shape: ${arr.shape}`)
+      throw new Error(`Unsupported array shape: ${data && data._rshape}`)
     }
   }
   return data
