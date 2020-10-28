@@ -18,101 +18,124 @@
   <meta name="viewport" content="width=device-width, initial-scale=1,
     shrink-to-fit=no">
 
-  <link rel="icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
-  <link rel="apple-touch-icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
-  <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.js"></script>
-  <script>
-    if ('serviceWorker' in navigator && document.location.protocol !== 'http:') {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./serviceWorker.js').then(function (registration) {
-          // Registration was successful
-          console.log('ServiceWorker registration successful with scope: ', registration.scope)
-        }, function (err) {
-          // registration failed :(
-          console.log('ServiceWorker registration failed: ', err)
+    <link rel="icon" type="image/png" sizes="50x50"
+    href="/itk-vtk-viewer/logo.png">
+    <link rel="apple-touch-icon" type="image/png" sizes="50x50" href="/itk-vtk-viewer/logo.png">
+
+    <script type="text/javascript" src="https://lib.imjoy.io/imjoy-loader.js"></script>
+    <script>
+      if ('serviceWorker' in navigator && document.location.protocol !== 'http:') {
+        window.addEventListener('load', function () {
+          navigator.serviceWorker.register('./serviceWorker.js').then(function (registration) {
+            // Registration was successful
+            console.log('ServiceWorker registration successful with scope: ', registration.scope)
+          }, function (err) {
+            // registration failed :(
+            console.log('ServiceWorker registration failed: ', err)
+          })
         })
-      })
-    }
+      }
+    </script>
 
-  </script>
-  <link rel="icon" type="image/png" href="favicon-32x32.png">
-</head>
+    <link rel="icon" type="image/png" href="favicon-32x32.png">
+  </head>
 
-<body>
-  <div class="content"
-    style="position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; overflow: hidden; background: black; margin: 0; padding: 0;">
-  </div>
-  <script type="text/javascript" src="itkVtkViewer.js">
-  </script>
-  <script>
-    async function setupViewerForImJoy(container) {
+  <body>
+    <div class="content" style="position: absolute; width: 100vw; height: 100vh; top: 0; left: 0; overflow: hidden; background: black; margin: 0; padding: 0;"></div>
+    <script type="text/javascript" src="itkVtkViewer.js">
+    </script>
+    <script>
+     async function setupViewerForImJoy(container) {
       const imjoyRPC = await imjoyLoader.loadImJoyRPC({
         api_version: '0.2.3'
       })
+      const version = itkVtkViewer.version
       const api = await imjoyRPC.setupRPC({
         name: 'itk-vtk-viewer',
-        version: '9.23.x',
+        version,
         description: '2D / 3D web image, mesh, and point set viewer using itk.js and vtk.js ',
         type: 'rpc-window',
-      })
-      api.registerCodec({
-        name: 'itkimage',
-        decoder: itkVtkViewer.utils.convertToItkImage
-      })
-      api.registerCodec({
-        name: 'ndarray',
-        decoder: itkVtkViewer.utils.ndarrayToItkImage
+        docs: 'https://kitware.github.io/itk-vtk-viewer/docs/imjoy.html',
+        authors: ['Matt McCormick', 'Wei Ouyang'],
+        license: '3-Clause BSD License',
+        labels: ['visualization', 'itk', 'vtk', 'image', 'mesh', 'geometry', 'point set', '2D', '3D'],
+        icon: 'https://kitware.github.io/itk-vtk-viewer/app/favicon-32x32.png',
+        cover: ['https://kitware.github.io/itk-vtk-viewer/docs/howToUse.jpg', 'https://kitware.github.io/itk-vtk-viewer/docs/imjoy.png'],
       })
       api.export({
         setup() {
+          this.viewer = null
+          itkVtkViewer.createViewerFromLocalFiles(container).then((viewer) => {
+            this.viewer = viewer
+          })
           api.log("itk-vtk-viewer loaded successfully.")
         },
+
         async run(ctx) {
-          if (ctx.data && ctx.data.image_array) {
-            await this.imshow(ctx.data.image_array)
-          } else {
-            itkVtkViewer.createViewerFromLocalFiles(container)
+          if (ctx.data && ctx.data.image) {
+            await this.setImage(ctx.data.image)
+          }
+          else if (ctx.data && ctx.data.image_array) {
+            await this.setImage(ctx.data.image_array)
           }
         },
-        async imshow(image_array) {
-          const vtkImage = itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage(image_array)
-          const dims = vtkImage.getDimensions()
-          const is2D = dims.length === 2 || (dims.length === 3 && dims[2] === 1)
 
-          // try to reuse the last viewer if there is no change in the image dimensions
-          if(this.viewer && JSON.stringify(dims) == JSON.stringify(this.last_dims)){
-            this.viewer.setImage(vtkImage);
-            this.viewer.getStore().renderWindow.render();
+        async imshow(image) {
+          let itkImage = image
+          if(image._rtype === 'ndarray'){
+            itkImage = itkVtkViewer.utils.ndarrayToItkImage(image)
           }
-          else{
-            this.viewer = itkVtkViewer.createViewer(container, {
+
+          const vtkImage = itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage(itkImage)
+          const is2D = itkImage.imageType.dimension === 2
+          if (this.viewer === null) {
+            this.viewer = await itkVtkViewer.createViewer(container, {
               image: vtkImage,
               pointSets: null,
               geometries: null,
               use2D: is2D,
               rotate: false
             })
-            this.last_dims = dims;
+          } else {
+            await this.viewer.setImage(vtkImage)
+          }
+        },
+
+        async setImage(image) {
+          let itkImage = image
+          if(image._rtype === 'ndarray'){
+            itkImage = itkVtkViewer.utils.ndarrayToItkImage(image)
+          }
+
+          const vtkImage = itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage(itkImage)
+          const is2D = itkImage.imageType.dimension === 2
+          if (this.viewer === null) {
+            this.viewer = await itkVtkViewer.createViewer(container, {
+              image: vtkImage,
+              pointSets: null,
+              geometries: null,
+              use2D: is2D,
+              rotate: false
+            })
+          } else {
+            await this.viewer.setImage(vtkImage)
           }
         }
       })
     }
 
     const container = document.querySelector('.content');
-    const urlParams = new URLSearchParams(window.location.search)
     // inside an iframe
     if (window.self !== window.top) {
       setupViewerForImJoy(container)
     } else {
-      let viewer = itkVtkViewer.processURLParameters(container, {
+      const viewer = itkVtkViewer.processURLParameters(container, {
         fullscreen: true
       });
       if (!viewer) {
         itkVtkViewer.createViewerFromLocalFiles(container)
       }
     }
-
   </script>
-</body>
-
+  </body>
 </html>
