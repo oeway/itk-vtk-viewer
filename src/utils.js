@@ -1,6 +1,7 @@
 import vtkITKHelper from 'vtk.js/Sources/Common/DataModel/ITKHelper'
 import vtkCoordinate from 'vtk.js/Sources/Rendering/Core/Coordinate'
 import vtk from 'vtk.js/Sources/vtk'
+import PixelTypes from 'itk/PixelTypes'
 
 export { readFiles } from './IO/processFiles'
 export { vtkITKHelper }
@@ -316,77 +317,69 @@ const numpy2vtkType = {
   },
 }
 
-export function ndarrayToItkImage(data) {
-  // convert legacy ndarray encoding
-  if (data.__jailed_type__ === 'ndarray') {
-    data._rtype = data.__jailed_type__
-    data._rshape = data.__shape__
-    data._rvalue = data.__value__.buffer
-      ? data.__value__.buffer
-      : data.__value__
-    data._rdtype = data.__dtype__
+export function ndarrayToItkImage(array) {
+  if (array._rtype !== 'ndarray') {
+    throw new Error('Invalid ndarray type: ' + array._rtype)
   }
-
-  if (data._rtype === 'ndarray') {
-    const dtype = numpy2vtkType[data._rdtype]
-    if (
-      data._rshape.length === 2 ||
-      (data._rshape.length == 3 && data._rshape[2] <= 4)
-    ) {
-      const channels = data._rshape.length === 3 ? data._rshape[2] : 1
-      return {
-        imageType: {
-          dimension: 2,
-          pixelType: 1,
-          componentType: dtype.componentType,
-          components: channels,
-        },
-        name: 'Image',
-        origin: [0, 0],
-        spacing: [1, 1],
-        direction: {
-          data: [1, 0, 0, 1],
-        },
-        size: [data._rshape[1], data._rshape[0]],
-        data: new dtype.arrayType(data._rvalue),
-      }
-    } else if (data._rshape.length === 3) {
-      return {
-        imageType: {
-          dimension: 3,
-          pixelType: 1,
-          componentType: dtype.componentType,
-          components: 1,
-        },
-        name: 'Volume',
-        origin: [0, 0, 0],
-        spacing: [1, 1, 1],
-        direction: {
-          data: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-        },
-        size: [data._rshape[2], data._rshape[1], data._rshape[0]],
-        data: new dtype.arrayType(data._rvalue),
-      }
-    } else if (data._rshape.length === 4) {
-      return {
-        imageType: {
-          dimension: 3,
-          pixelType: 1,
-          componentType: dtype.componentType,
-          components: data._rshape[3],
-        },
-        name: 'Volume',
-        origin: [0, 0, 0],
-        spacing: [1, 1, 1],
-        direction: {
-          data: [1, 0, 0, 0, 1, 0, 0, 0, 1],
-        },
-        size: [data._rshape[2], data._rshape[1], data._rshape[0]],
-        data: new dtype.arrayType(data._rvalue),
-      }
-    } else {
-      throw new Error(`Unsupported array shape: ${data && data._rshape}`)
+  const { componentType, arrayType } = numpy2vtkType[array._rdtype]
+  if (
+    array._rshape.length === 2 ||
+    (array._rshape.length == 3 && array._rshape[2] <= 4)
+  ) {
+    const channels = array._rshape.length === 3 ? array._rshape[2] : 1
+    const pixelType =
+      channels === 1 ? PixelTypes.Scalar : PixelTypes.VariableLengthVector
+    return {
+      imageType: {
+        dimension: 2,
+        pixelType,
+        componentType,
+        components: channels,
+      },
+      name: 'Image',
+      origin: [0.0, 0.0],
+      spacing: [1.0, 1.0],
+      direction: {
+        data: [1.0, 0.0, 0.0, 1.0],
+      },
+      size: [array._rshape[1], array._rshape[0]],
+      data: new arrayType(array._rvalue),
     }
+  } else if (array._rshape.length === 3) {
+    return {
+      imageType: {
+        dimension: 3,
+        pixelType: PixelTypes.Scalar,
+        componentType,
+        components: 1,
+      },
+      name: 'Volume',
+      origin: [0.0, 0.0, 0.0],
+      spacing: [1.0, 1.0, 1.0],
+      direction: {
+        data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+      },
+      size: [array._rshape[2], array._rshape[1], array._rshape[0]],
+      data: new arrayType(array._rvalue),
+    }
+  } else if (array._rshape.length === 4) {
+    return {
+      imageType: {
+        dimension: 3,
+        pixelType: PixelTypes.Scalar,
+        componentType,
+        components: array._rshape[3],
+      },
+      name: 'Volume',
+      origin: [0.0, 0.0, 0.0],
+      spacing: [1.0, 1.0, 1.0],
+      direction: {
+        data: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+      },
+      size: [array._rshape[2], array._rshape[1], array._rshape[0]],
+      data: new arrayType(array._rvalue),
+    }
+  } else {
+    throw new Error(`Unsupported shape: ${array._rshape}`)
   }
-  return data
 }
