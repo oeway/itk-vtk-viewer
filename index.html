@@ -102,11 +102,13 @@
         },
 
         async setImage(image) {
-          let itkImage = image
+          let itkImage
           if(image._rtype === 'ndarray'){
             itkImage = itkVtkViewer.utils.ndarrayToItkImage(image)
           }
-
+          else{
+            itkImage = await itkVtkViewer.utils.convertToItkImage(image)
+          }
           const vtkImage = itkVtkViewer.utils.vtkITKHelper.convertItkToVtkImage(itkImage)
           const is2D = itkImage.imageType.dimension === 2
           if (this.viewer === null) {
